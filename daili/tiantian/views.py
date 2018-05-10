@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render, redirect
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 from models import *
 
@@ -29,10 +29,14 @@ def registerhland(request):
     user.u_name = user1
     user.u_pwd = pwd
     user.u_email = email
-
-    print (user.u_name)
     user.save()
     return redirect("/user/login")
+
+def register_judge(request):
+    get = request.GET
+    judge = get.get('user_name')
+    count = UserInfo.objects.filter(u_name=judge).count()
+    return JsonResponse({'list':count})
 
 def login(request):
     return render(request, "tiantian/login.html")

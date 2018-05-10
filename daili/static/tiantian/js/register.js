@@ -7,6 +7,7 @@ $(function(){
 	var error_check = false;
 
 
+
 	$('#user_name').blur(function() {
 		check_user_name();
 	});
@@ -48,8 +49,18 @@ $(function(){
 		}
 		else
 		{
-			$('#user_name').next().hide();
-			error_name = false;
+
+			$.get('/user/register_judge/?user_name='+$(user_name).val(),function (list) {
+				if (list.list>0){
+					$("#user_name").next().html('用户名重复')
+					$('#user_name').next().show();
+					error_name = true;
+				}
+				else{
+					$('#user_name').next().hide();
+					error_name = false;
+				}
+			})
 
 
 		}
@@ -102,25 +113,31 @@ $(function(){
 		{
 			$('#email').next().html('你输入的邮箱格式不正确')
 			$('#email').next().show();
-			error_check_password = true;
+			error_email = true;
 		}
 
 	}
 
 
-	$('#reg_form').submit(function() {
+	$('.reg_form').submit(function() {
+
 		check_user_name();
 		check_pwd();
 		check_cpwd();
 		check_email();
-
-		if(error_name == false && error_password == false && error_check_password == false && error_email == false && error_check == false)
+		if(error_name == false && error_password == false && error_check_password == false && error_check == false)
 		{
+			alert("123")
 			return true;
+
 		}
+
 		else
 		{
+			alert("1234")
 			return false;
+
+
 		}
 
 	});
