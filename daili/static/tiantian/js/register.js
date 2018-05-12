@@ -121,7 +121,7 @@ $(function(){
 
 	$('.reg_form').submit(function() {
 
-		check_user_name();
+		check_user_name();  // 提交时调用验证表单数值 是否为空注册是否错误
 		check_pwd();
 		check_cpwd();
 		check_email();

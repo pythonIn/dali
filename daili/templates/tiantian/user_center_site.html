@@ -1,4 +1,139 @@
 {% extends 'bash_base.html' %}
+{% block head%}
+    <script>
+
+
+    $(function () {
+    var error_shou = false;
+    var error_addr = false;
+    var error_you =false;
+    var error_phones = false;
+
+        // 焦点事件
+        $('#shou').blur(function () {
+            check_shou_name();
+        });
+
+        $('.site_area').blur(function () {
+            check_site_area();
+        });
+
+        $('.zip_code1').blur(function () {
+            check_zip_code1()
+        });
+
+
+        $('.phone1').blur(function () {
+           check_phone()
+        });
+
+
+         // 判断收件人
+        function check_shou_name(){
+            var name =$('#shou').val()
+            var ret = /^[\w]{1,6}$/ //正则匹配，前面规则出现1-6次
+            if (ret.test(name)){
+                error_shou =false;
+                $('.error_tip').hide()
+            }
+            else{
+                error_shou = true;
+                $('.error_tip').html('收件人最多输入20个文字').show()
+            }
+        }
+
+        //  判断地址
+        function check_site_area(){
+
+            if ($('.site_area').val().length>100){
+                 error_addr = true
+                $('.error_text').html('最大可输入100个文字').show()
+            }
+            else{
+                error_addr =false
+                $('.error_text').hide()
+            }
+        }
+
+        // 判断邮编
+        function check_zip_code1(){
+
+            if ($('.zip_code1').val().length >6){
+                error_you=true;
+                $('.error_ubian').html('邮编输入错误').show()
+
+            }
+            else{
+                error_you=false;
+                $('.error_ubian').hide()
+            }
+        }
+
+        // 判断手机号码
+        function check_phone(){
+
+             var numbers = $('.phone1').val()  // 正则test匹配手机号是否正确
+            var ret = /^[\d]{5,20}$/;  //前面的规则最少出现5次，最多20次
+            if (ret.test(numbers) ){
+                error_phones = false
+                $('.error_phone').hide()
+            }
+            else {
+                $('.error_phone').html('号码输入错误').show()
+                error_phones =true
+            }
+
+        }
+
+        // form 表单创建的id，当表单提交触发，或者用提交框的id 点击触发
+        $('#form_bd').submit(function () {
+            // 表单提交时再进行判断，1、空不能提交，会判断是否为空，2、修改一个时会判断其他是否有误
+            check_shou_name();
+            check_site_area();
+            check_zip_code1();
+            check_phone();
+            if (error_phones==false && error_you==false && error_addr==false && error_shou==false){
+                 alert('1235')
+                return true;
+
+            }
+
+            else {
+
+                alert('输入有误')
+                return false;
+            }
+
+        })
+    })
+    </script>
+
+    <style>
+
+    .error_tip{
+        color: red;
+        font-size: 13px;
+        display: none; /*默认不显示该标签*/
+    }
+    .error_text{
+        color: red;
+        font-size: 13px;
+        display: none; /*默认不显示该标签*/
+    }
+      .error_ubian{
+        color: red;
+        font-size: 13px;
+        display: none; /*默认不显示该标签*/
+    }
+      .error_phone{
+        color: red;
+        font-size: 13px;
+        display: none; /*默认不显示该标签*/
+    }
+
+
+    </style>>
+{% endblock head %}
 {% block body1 %}
 	<div class="search_bar clearfix">
 		<a href="index.html" class="logo fl"><img src="/static/tiantian/images/logo.png"></a>
@@ -23,30 +158,35 @@
 				<div class="site_con">
 					<dl>
 						<dt>当前地址：</dt>
-						<dd>北京市 海淀区 东北旺西路8号中关村软件园 （李思 收） 182****7528</dd>
-					</dl>					
+                        <dd>{{ list.u_add }} {{ list.u_addressee }} {{ list.u_phone }}  {{ list.u_this }}</dd>
+					</dl>
 				</div>
 				<h3 class="common_title2">编辑地址</h3>
 				<div class="site_con">
-					<form>
+					<form action="/user/site" method="post" id="form_bd">
+                        {% csrf_token %}
 						<div class="form_group">
 							<label>收件人：</label>
-							<input type="text" name="">
+							<input type="text"  id ='shou' name="recipinet" value={{ list.u_addressee }} >
+                            <span class="error_tip" >提示信息</span>
 						</div>
 						<div class="form_group form_group2">
 							<label>详细地址：</label>
-							<textarea class="site_area"></textarea>
+							<textarea class="site_area" name="site_addr" >{{ list.u_add }}</textarea>
+                            <span class="error_text" >提示信息</span>
 						</div>
 						<div class="form_group">
 							<label>邮编：</label>
-							<input type="text" name="">
+							<input type="text" class ='zip_code1' name="zip_code" value={{ list.u_this }}>
+                            <span class="error_ubian" >提示信息</span>
 						</div>
 						<div class="form_group">
 							<label>手机：</label>
-							<input type="text" name="">
+							<input type="text" class ='phone1' name="phone" value={{ list.u_phone }}>
+                            <span class="error_phone" >提示信息</span>
 						</div>
 
-						<input type="submit" name="" value="提交" class="info_submit">
+						<input type="submit"  value="提交" class="info_submit">
 					</form>
 				</div>
 		</div>

@@ -73,8 +73,8 @@ def login_hland(request):
                 red.set_cookie("unmae","",max_age=-1)
 
             # 存入到django默认服务端session中用于个人中心显示
-            #request.session['user_id'] = get_name[0].id # 存入当前用户的id用于个人中心显示
-            #request.session['user_name'] = get_name # session也是一个类字典的类型，通过user_name键获取值
+            request.session['user_id'] = get_name[0].id # 存入当前用户在数据库中的的id用于个人中心做数据库查询判断当前的email
+            request.session['user_name'] = name # session也是一个类字典的类型，通过user_name键获取值
             return red # 返回设置的cookie,return给当前表单所属浏览器。
 
         # 如果密码不正确，上下文提交至页面，js判断写入出错为密码 重新渲染页面，显示之前输入的错误的账户与密码
@@ -88,11 +88,25 @@ def login_hland(request):
 
 
 # 用户中心，个人信息
-def info(request):
-    return render(request,'tiantian/user_center_info.html')
+def info(request): # 数据库通过 缓存的id 获取当前用户的eamil
+    user_email = UserInfo.objects.get(id=request.session['user_id']).u_email
+    u_name =request.session['user_name'] # 直接获取存入缓存中的name
+    context = {'title':'用户中心', 'uname':u_name, 'email':user_email}
+    return render(request,'tiantian/user_center_info.html',context)
 # 订单
 def order(request):
-    return render(request, 'tiantian/user_center_order.html')
+    context = {'title':'用户中心'}
+    return render(request, 'tiantian/user_center_order.html',context)
 # 收货地址
 def site(requst):
-    return render(requst, 'tiantian/user_center_site.html')
+    # 通过缓存 获取该用户的数据库对象
+    user = UserInfo.objects.get(id = requst.session['user_id'])
+    if requst.method=='POST': # 存入数据库
+        user.u_addressee = requst.POST['recipinet']
+        user.u_add = requst.POST['site_addr']
+        user.u_phone = requst.POST['phone']
+        user.u_this = requst.POST['zip_code']
+        user.save()
+    context = {'list':user}
+
+    return render(requst, 'tiantian/user_center_site.html',context)
