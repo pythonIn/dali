@@ -1,3 +1,4 @@
+#coding:utf-8
 """
 Django settings for daili project.
 
@@ -37,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tiantian'
+    'tiantian',
+    'tinymce',
+    'tiantian_page',
 ]
 
 MIDDLEWARE = [
@@ -126,3 +129,12 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS=[
     os.path.join(BASE_DIR,"static")
 ]
+
+MEDIA_ROOT=os.path.join(BASE_DIR,'static') # 存放上传图片
+
+
+TINYMCE_DEFAULT_CONFIG={
+    'theme':'advanced',
+    'width':600,
+    'height':400,
+}

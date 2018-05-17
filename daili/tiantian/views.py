@@ -91,11 +91,11 @@ def login_hland(request):
 def info(request): # 数据库通过 缓存的id 获取当前用户的eamil
     user_email = UserInfo.objects.get(id=request.session['user_id']).u_email
     u_name =request.session['user_name'] # 直接获取存入缓存中的name
-    context = {'title':'用户中心', 'uname':u_name, 'email':user_email}
+    context = {'title':'用户中心', 'uname':u_name, 'email':user_email,}# page_name:1继承de_goods/base.html模板判断使用。
     return render(request,'tiantian/user_center_info.html',context)
 # 订单
 def order(request):
-    context = {'title':'用户中心'}
+    context = {'title':'用户中心', }
     return render(request, 'tiantian/user_center_order.html',context)
 # 收货地址
 def site(requst):
@@ -107,6 +107,6 @@ def site(requst):
         user.u_phone = requst.POST['phone']
         user.u_this = requst.POST['zip_code']
         user.save()
-    context = {'list':user}
+    context = {'list':user, }
 
     return render(requst, 'tiantian/user_center_site.html',context)
