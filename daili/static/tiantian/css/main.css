@@ -205,7 +205,8 @@ html,body{height:100%}
 .goods_type_list li{
 	width:196px;
 	float:left;
-	margin-bottom:10px
+	margin-bottom:10px;
+	list-style:none;
 }
 
 .goods_type_list li img{width:160px;height:160px;display:block;margin:10px auto;}
@@ -219,7 +220,7 @@ html,body{height:100%}
 
 /* 分页样式 */
 
-.pagenation{height:32px;text-align:center;font-size:0;margin:30px auto;}
+.pagenation{height:32px;text-align:center;font-size:0;margin:30px auto;margin-right: 250px}
 .pagenation a{display:inline-block;border:1px solid #d2d2d2;background-color:#f8f6f7;font-size:12px;padding:7px 10px;color:#666;margin:5px}
 
 .pagenation .active{background-color:#fff;color:#43a200}

@@ -3,9 +3,11 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render
 
-from tiantian_page.models import  *
+from tiantian_page.models import *
 
-from django.core.paginator import  Paginator
+from django.core.paginator import Paginator
+
+
 def Index(request):
       # 每条类中4条最新的，4条最热的
     typelist = TypeInfo.objects.all() # 获取所有类型，通过类型的一对多关系获取该类型下的商品
@@ -35,11 +37,32 @@ def Index(request):
 
 
   # 从index页面中传来的自定义值，1_1_1 ，1代表产品类型，1，代表分页从第1页开始，1，代表默认以index中的最新的排序
-def list(request,pid,pindex,sort): # fliter只是过滤不能获取到使用goodsinfo多关系查询.
-    typeinfo = TypeInfo.objects.get(id=int(pid)); # 查询类型为1的产品名，当前数据库id为1是水果类型
-    goods = typeinfo.goodsinfo_set.order_by('-id')
-    context = {'list':goods}
-    return render(request,'df_goods/list.html',context)
+def list(request,pid,pindex,sort): # fliter获取满足条件的数据返回为对象列表类型
+    typeinfo = TypeInfo.objects.get(id=int(pid)) # 查询类型为1的产品名，当前数据库id为1是水果类型
+    new_goods = typeinfo.goodsinfo_set.order_by('-id')[0:2] # 获取两个最新的商品
 
+    if int(sort) == 1: # 默认排序 按最新的,sort转化为int类型做比较，比较完后sort还是字符类型的
+        goods = typeinfo.goodsinfo_set.order_by('-id') # oreder_by先排序，后-id降序 就是最新的
+    if int(sort) == 2: # 按价格排序
+        goods = typeinfo.goodsinfo_set.order_by('-gprice')
+    if int(sort) ==3:# 按热度排序
+        goods = typeinfo.goodsinfo_set.order_by('-gclick')
+
+
+    pages = Paginator(goods,10) # 分10页 # 获取分页对象
+    paginator = pages.page(int(pindex))   # 使用对象的page方法获取第几页的数据
+    index_list = pages.page_range  # 获取  给对象分的页数。  # pindex,转化为数值返回用于判断是否在当前页
+    context = {'goodstype':typeinfo,  'pindex':int(pindex),'sort':int(sort),# int(sort)转化为数值传送，进行页面显示特效的判断
+                'pageinator':paginator, 'index_list':index_list, 'title':'商品列表',
+               'new_goods':new_goods,'lists':1, 'ups':1}# lists,ups为了进行父页面判断后，加载页面。
+            #'pageinator':paginator, html获取当前页数据。不可直接用goods 那样不受分页的数量控制了，
+
+    return render(request, 'df_goods/list.html', context)
+
+def detail(request, pid):
+    typeinfo = TypeInfo.objects.get(id=int(pid))
+    new_goods = typeinfo.goodsinfo_set.order_by('-id')[0:2]
+    context1 = {'title':'商品详情','lists':1, 'ups':1,'ups1':1,'new_goods':new_goods}
+    return render(request, 'df_goods/detail.html',context1)
 
 
