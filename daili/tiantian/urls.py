@@ -11,6 +11,7 @@ urlpatterns = [
     url(r"^loginhland", views.login_hland),
     url(r"^info", views.info),
     url(r"^order", views.order),
-    url(r"^site", views.site)
+    url(r"^site", views.site),
+    url(r"^logout",views.logout)
 
 ]

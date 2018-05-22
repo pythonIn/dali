@@ -17,21 +17,24 @@ html,body{height:100%}
 	line-height:29px;
 }
 
-.login_info{
-	display:none;
-}
+
 
 .login_info em{color:#ff8800}
+.login_info a{
+	color:blue;
+}
+
+
 
 .login_btn a,.user_link a{
 	color:#666;
 }
 
-.login_btn a:hover,.user_link a:hover{
+.login_btn a:hover,.user_link a:hover,.login_info a:hover{
 	color:#ff8800;
 }
 
-.login_btn span,.user_link span{
+.login_btn span,.user_link span ,.login_info span{
 	color:#cecece;
 	margin:0 10px;
 }

@@ -9,6 +9,10 @@ from models import *
 
 from hashlib import sha1
 
+import user_decorator
+
+from tiantian_page.models import *
+
 # 显示注册页面
 def register(request):
     return render(request, "tiantian/register.html")
@@ -64,17 +68,20 @@ def login_hland(request):
         pwd = s1.hexdigest()
         # 判断密码是否正确， 正确发送重定向转向用户中心，并设置cookie 与 session
         if get_name[0].u_pwd == pwd:
-            red = HttpResponseRedirect('/user/info') # 转向，并让red成为response对象，调用cookie方法发送cookie
+            # 判断cookie中url键是否保存指定的转向地址，如果没有，默认为user/info页面,
+            url = request.COOKIES.get('url','/user/info')
+            red = HttpResponseRedirect(url) # 转向，并让red成为response对象，调用cookie方法发送cookie
             if jizhu!=0: # 如果不等于0 就说明点击了记住用户名，向转向的user/info发送cookie，浏览器保存cookie
                 red.set_cookie('uname',name) # 设置cookie
-                # 设置cookie为 空 立马过期，
 
-            else:
+
+            else:# 设置cookie为空 立马过期，
                 red.set_cookie("unmae","",max_age=-1)
 
-            # 存入到django默认服务端session中用于个人中心显示
+            # 存入到django默认服务端session中用于个人中心显示,进入订单或个人中心时验证是否登入
             request.session['user_id'] = get_name[0].id # 存入当前用户在数据库中的的id用于个人中心做数据库查询判断当前的email
             request.session['user_name'] = name # session也是一个类字典的类型，通过user_name键获取值
+            red.delete_cookie('goods_ids') #　重新登入后，默认删除所有用户浏览记录
             return red # 返回设置的cookie,return给当前表单所属浏览器。
 
         # 如果密码不正确，上下文提交至页面，js判断写入出错为密码 重新渲染页面，显示之前输入的错误的账户与密码
@@ -87,21 +94,45 @@ def login_hland(request):
         return render(request, 'tiantian/login.html', context)
 
 
+
 # 用户中心，个人信息
+@user_decorator.login # 调用装饰器判断是否登入。已有登入信息就执行，未有返回登入
 def info(request): # 数据库通过 缓存的id 获取当前用户的eamil
     user_email = UserInfo.objects.get(id=request.session['user_id']).u_email
     u_name =request.session['user_name'] # 直接获取存入缓存中的name
-    context = {'title':'用户中心', 'uname':u_name, 'email':user_email,}# page_name:1继承de_goods/base.html模板判断使用。
+    # 浏览记录,从商品详情视图中存入的cookie键获取
+    goods_ids = request.COOKIES.get('goods_ids','')# 获取最新浏览的id主键，如果ｃｏｏｋｉｅ没有最新浏览记录就显示默认''
+    if goods_ids != '': # 判断是否为空，
+        goods_ids = goods_ids.split(',') # 切割成列表遍历最新浏览顺序后,在添加到列表中
+        good_list = []
+        for good_id in goods_ids:  # 添加最新浏览商品信息为，从商品详情cookie中保存的最近浏览的商品id。
+            good_list.append(GoodsInfo.objects.get(id=int(good_id))) #  解包后根据id按最新顺序再放到列表中
+    else: # 如果为空就执行
+        good_list = []
+        good_list = goods_ids
+
+    context = {'title':'用户中心', 'uname':u_name, 'email':user_email,'good_list':good_list}# page_name:1继承de_goods/base.html模板判断使用。
     return render(request,'tiantian/user_center_info.html',context)
+
+
+
+# 退出``， 清除session即可
+def logout(request):
+    request.session.flush()  # 清除当前会话数据和cookie， session靠cookie来链接的
+    return redirect('/') # 重定向到 主页
+
+
 # 订单
+@user_decorator.login
 def order(request):
     context = {'title':'用户中心', }
     return render(request, 'tiantian/user_center_order.html',context)
 # 收货地址
+@user_decorator.login
 def site(requst):
     # 通过缓存 获取该用户的数据库对象
     user = UserInfo.objects.get(id = requst.session['user_id'])
-    if requst.method=='POST': # 存入数据库
+    if requst.method=='POST': # 如果是表单提交存入数据库
         user.u_addressee = requst.POST['recipinet']
         user.u_add = requst.POST['site_addr']
         user.u_phone = requst.POST['phone']
@@ -110,3 +141,6 @@ def site(requst):
     context = {'list':user, }
 
     return render(requst, 'tiantian/user_center_site.html',context)
+
+
+

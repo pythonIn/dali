@@ -1,28 +1,64 @@
 {% extends 'df_goods/base.html' %}
 
+{% block head %}
+    <script>
+        function add() {
+            num =parseInt($('.num_show').val()); // 把字符串类型转化为int类型
+            $('.num_show').val(num+1);
+            $('.num_show').blur()  // 点击 进行+ - 运算后， 执行num_show.blur 事件，
+        }                           // 点击+后价格就能计算修改，不然要再点击数量框才能计算修改值。
+        function  minus() {
+            num = parseInt($('.num_show').val());
+            if (num>1){
+                $('.num_show').val(num-1);
+            }
+            $('.num_show').blur()
+
+        }
+        $(function () {
+            $('.num_show').blur(function () {
+                num = parseInt($('.num_show').val()) // 转换为整数
+                if (num>0) { // 非负数才执行
+                    $('.num_show').val(num)// 数量框只可显示为整数数量,把转化整数的num显示在数量框中
+
+                    price = parseFloat($('#gprice').text())// text 为获取em标签中的输出值
+                    zongjia = num * price
+                    $('#zong').text(zongjia.toFixed(2) + '元') // 计算后修改总价格，传到zong标签的显示效果text中
+                }
+
+                else{
+                    num = 1
+                    $('.num_show').val(num);
+                }
+                })
+
+
+        })
+    </script>
+{% endblock head %}
 
 {% block body2 %}
 
 
 	<div class="goods_detail_con clearfix">
-		<div class="goods_detail_pic fl"><img src="images/goods_detail.jpg"></div>
+		<div class="goods_detail_pic fl"><img src="/static/{{ goods.gpic }}"></div>
 
 		<div class="goods_detail_list fr">
-			<h3>大兴大棚草莓</h3>
-			<p>草莓浆果柔软多汁，味美爽口，适合速冻保鲜贮藏。草莓速冻后，可以保持原有的色、香、味，既便于贮藏，又便于外销。</p>
+			<h3>{{ goods.gtitle }}</h3>
+			<p>{{ goods.gjianjie}}</p>
 			<div class="prize_bar">
-				<span class="show_pirze">¥<em>16.80</em></span>
-				<span class="show_unit">单  位：500g</span>
+				<span class="show_pirze">¥<em id="gprice">{{ goods.gprice }}</em></span>
+				<span class="show_unit">单  位：{{ goods.gunit }}</span>
 			</div>
 			<div class="goods_num clearfix">
 				<div class="num_name fl">数 量：</div>
 				<div class="num_add fl">
 					<input type="text" class="num_show fl" value="1">
-					<a href="javascript:;" class="add fr">+</a>
-					<a href="javascript:;" class="minus fr">-</a>
+					<a href="javascript:add();" class="add fr">+</a>
+					<a href="javascript:minus();" class="minus fr">-</a>
 				</div>
 			</div>
-			<div class="total">总价：<em>16.80元</em></div>
+			<div class="total">总价：<em id="zong">{{ goods.gprice }}元</em></div>
 			<div class="operate_btn">
 				<a href="javascript:;" class="buy_btn">立即购买</a>
 				<a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>
@@ -42,12 +78,13 @@
 			<div class="tab_content">
 				<dl>
 					<dt>商品详情：</dt>
-					<dd>草莓采摘园位于北京大兴区 庞各庄镇四各庄村 ，每年1月-6月面向北京以及周围城市提供新鲜草莓采摘和精品礼盒装草莓，草莓品种多样丰富，个大香甜。所有草莓均严格按照有机标准培育，不使用任何化肥和农药。草莓在采摘期间免洗可以直接食用。欢迎喜欢草莓的市民前来采摘，也欢迎各大单位选购精品有机草莓礼盒，有机草莓礼盒是亲朋馈赠、福利送礼的最佳选择。 </dd>
+					<dd>{{ goods.gcontext|safe }} </dd>
 				</dl>
 			</div>
 		</div>
-  {% endblock detail %}
 
+  {% endblock detail %}
+        <div class='add_jump'></div>
     {% block detail_js %}
 
 	<script type="text/javascript">
