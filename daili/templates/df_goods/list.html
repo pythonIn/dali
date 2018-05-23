@@ -1,6 +1,19 @@
 {% extends 'df_goods/base.html' %}
 
 {% block head %}
+    <script>
+    $(function () {
+        $('.add_goods').click(function () {
+            id = $(this).attr('id') // 返回当前被选的属性函数（获取当前产品的id）
+            url= '/cart/add'+ id+'_1' //构建添加到购物车add函数的地址,_1 正则_(\d) 表示加1数量
+            $.get(url,function (data) { // ajax 请求， 回调函数获取返回的json数据
+                $('#show_count').text(data.count)　//　父级页面中的ｓｈｏｗ_count选择器，文本框中值更改为获取的ｊｓｏｎ数据
+
+            })
+        })
+    })
+    </script>
+
     <style>
     .r_wrap{
         width: 1024px;
@@ -36,7 +49,13 @@
 					<div class="operate">
 						<span class="prize">￥{{ g.gprice }}</span>
 						<span class="unit">{{ g.gprice }}/{{ g.gunit }}</span>
-						<a href="#" class="add_goods" title="加入购物车"></a>
+
+                        {% if request.session.user_name|default:'' != '' %}
+						<a href="javascript:;" id ="{{ g.id }}" class="add_goods" title="加入购物车"></a>
+                        {% else %}
+                        <a href="/user/login" class="add_goods" title="加入购物车"></a>
+                        {% endif %}
+
 					</div>
 				</li>
                 {% endfor %}

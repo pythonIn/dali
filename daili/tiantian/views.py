@@ -13,6 +13,8 @@ import user_decorator
 
 from tiantian_page.models import *
 
+from tiantian_cart.models import * # 导入购物车数据库　进行查询购物车信息
+
 # 显示注册页面
 def register(request):
     return render(request, "tiantian/register.html")
@@ -71,6 +73,9 @@ def login_hland(request):
             # 判断cookie中url键是否保存指定的转向地址，如果没有，默认为user/info页面,
             url = request.COOKIES.get('url','/user/info')
             red = HttpResponseRedirect(url) # 转向，并让red成为response对象，调用cookie方法发送cookie
+
+            cart_count = Cart_info.objects.filter(user_id=get_name[0].id).count()# 当前用户购物车商品的种类数量
+
             if jizhu!=0: # 如果不等于0 就说明点击了记住用户名，向转向的user/info发送cookie，浏览器保存cookie
                 red.set_cookie('uname',name) # 设置cookie
 
@@ -82,6 +87,7 @@ def login_hland(request):
             request.session['user_id'] = get_name[0].id # 存入当前用户在数据库中的的id用于个人中心做数据库查询判断当前的email
             request.session['user_name'] = name # session也是一个类字典的类型，通过user_name键获取值
             red.delete_cookie('goods_ids') #　重新登入后，默认删除所有用户浏览记录
+            request.session['count']=cart_count # 登入后显示购物车数量。
             return red # 返回设置的cookie,return给当前表单所属浏览器。
 
         # 如果密码不正确，上下文提交至页面，js判断写入出错为密码 重新渲染页面，显示之前输入的错误的账户与密码
@@ -100,6 +106,7 @@ def login_hland(request):
 def info(request): # 数据库通过 缓存的id 获取当前用户的eamil
     user_email = UserInfo.objects.get(id=request.session['user_id']).u_email
     u_name =request.session['user_name'] # 直接获取存入缓存中的name
+
     # 浏览记录,从商品详情视图中存入的cookie键获取
     goods_ids = request.COOKIES.get('goods_ids','')# 获取最新浏览的id主键，如果ｃｏｏｋｉｅ没有最新浏览记录就显示默认''
     if goods_ids != '': # 判断是否为空，
@@ -111,7 +118,7 @@ def info(request): # 数据库通过 缓存的id 获取当前用户的eamil
         good_list = []
         good_list = goods_ids
 
-    context = {'title':'用户中心', 'uname':u_name, 'email':user_email,'good_list':good_list}# page_name:1继承de_goods/base.html模板判断使用。
+    context = {'title':'用户中心', 'uname':u_name, 'email':user_email,'title2':'用户中心','good_list':good_list}# page_name:1继承de_goods/base.html模板判断使用。
     return render(request,'tiantian/user_center_info.html',context)
 
 
@@ -125,7 +132,7 @@ def logout(request):
 # 订单
 @user_decorator.login
 def order(request):
-    context = {'title':'用户中心', }
+    context = {'title':'用户中心','title2':'全部订单' }
     return render(request, 'tiantian/user_center_order.html',context)
 # 收货地址
 @user_decorator.login
@@ -138,7 +145,7 @@ def site(requst):
         user.u_phone = requst.POST['phone']
         user.u_this = requst.POST['zip_code']
         user.save()
-    context = {'list':user, }
+    context = {'list':user, 'title':'用户中心','title2':'收货地址' }
 
     return render(requst, 'tiantian/user_center_site.html',context)
 

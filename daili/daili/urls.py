@@ -19,5 +19,6 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r"^user/", include('tiantian.urls')),
-    url(r"^", include('tiantian_page.urls'))
+    url(r"^", include('tiantian_page.urls')),
+    url(r'^cart/', include('tiantian_cart.urls'))
 ]

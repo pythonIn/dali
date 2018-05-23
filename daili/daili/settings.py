@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'tiantian',
     'tinymce',
     'tiantian_page',
+    'tiantian_cart'
 ]
 
 MIDDLEWARE = [
