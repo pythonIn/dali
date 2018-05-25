@@ -125,7 +125,7 @@ $(function(){
 		check_pwd();
 		check_cpwd();
 		check_email();
-		if(error_name == false && error_password == false && error_check_password == false && error_check == false)
+		if(error_name == false && error_password == false && error_check_password == false && error_check == false && error_email==false)
 		{
 			alert("123")
 			return true;

@@ -2,6 +2,7 @@
 
 {% block head %}
     <script>
+    //　计算添加　金额
         function add() {
             num =parseInt($('.num_show').val()); // 把字符串类型转化为int类型
             $('.num_show').val(num+1);
@@ -16,6 +17,7 @@
 
         }
         $(function () {
+            // 计算　＋　－金额
             $('.num_show').blur(function () {
                 num = parseInt($('.num_show').val()) // 转换为整数
                 if (num>0) { // 非负数才执行
@@ -31,9 +33,18 @@
                     $('.num_show').val(num);
                 }
                 })
+            // 加入购物车，　只能通过这种方法  在ｈｔｍｌ中是无法获取到用ｊｓ +-操作后的数量（在其他标签中的值）
+            $('.add_cart').click(function () {
+                txt = $('.num_show').val() //　获取数量
+                url = '/cart/add{{ goods.id }}_'+txt  // 构造地址，　产品ｉｄ，数量
+                $.get(url,function (data) {
+                    $('#show_count').text(data.count) //向父页面购物车中写入回调函数获得的数量值
+                })
 
+            })
 
         })
+
     </script>
 {% endblock head %}
 
@@ -61,7 +72,11 @@
 			<div class="total">总价：<em id="zong">{{ goods.gprice }}元</em></div>
 			<div class="operate_btn">
 				<a href="javascript:;" class="buy_btn">立即购买</a>
-				<a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>
+                {% if request.session.user_name|default:'' != "" %}
+				<a href='javascript:;' class="add_cart" id="add_goods">加入购物车</a>
+                {% else %}
+                <a href='/user/login' class="add_cart" >加入购物车</a>
+                {% endif %}
 			</div>
 		</div>
 	</div>
@@ -84,27 +99,37 @@
 		</div>
 
   {% endblock detail %}
-        <div class='add_jump'></div>
-    {% block detail_js %}
 
+
+{% block detail_js %}
+
+     <div class='add_jump'></div>
 	<script type="text/javascript">
-		var $add_x = $('#add_cart').offset().top;
-		var $add_y = $('#add_cart').offset().left;
+  // 动画
+		var $add_x = $('#add_goods').offset().top;
+		var $add_y = $('#add_goods').offset().left;
 
-		var $to_x = $('#show_count').offset().top;
+		var $to_x = $('#show_count').offset().top;　
 		var $to_y = $('#show_count').offset().left;
 
-		$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
-		$('#add_cart').click(function(){
-			$(".add_jump").stop().animate({
+　　　
+
+		$('#add_goods').click(function(){
+         $(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
+		    $(".add_jump").stop().animate({
+
 				'left': $to_y+7,
-				'top': $to_x+7},
+				'top': $to_x+7,
+
+                },
+
 				"fast", function() {
 					$(".add_jump").fadeOut('fast',function(){
-						$('#show_count').html(2);
+						$('#show_count').html({{ requset.session.count }});
 					});
 
 			});
-		})
+		});
+
 	</script>
     {% endblock detail_js%}

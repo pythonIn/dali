@@ -76,10 +76,10 @@ def detail(request, pid):
 
 
 # 浏览记录 根据浏览商品详情页面去保存记录，从用户中心视图再去获取返回到指定页面中
-    # requset 接收到的参数默认为字符串
+    # requset 接收到的参数默认为字符串,如果有浏览记录就排序，没有就直接添加
     good_ids = request.COOKIES.get('goods_ids','') # 获取cookie键 good_ids中的数据，如果没有 默认为空
 
-    # 对象中的id转化后为字符串格式
+    # 对象中的id转化后为字符串格式进行排序
     goods_id = '%d' %goods.id # 当前商品id转化为str字符串类型 保存到goods_id中判断cookie中是否有此id记录
     if good_ids != '': # 如果不等于默认的空字符，代表有浏览记录，做判断
         good_ids1 = good_ids.split(',') #获取到的cookies值，是字符串类型（是几个对象） 。根据，切割开成列表类型，然后count判断有没有

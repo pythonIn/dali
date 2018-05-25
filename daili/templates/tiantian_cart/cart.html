@@ -1,9 +1,136 @@
 {% extends 'bash_base.html' %}
+{% block head %}
+    <script>
+ //　删除操作 点击删除按钮会触发ｃａｒｔ_del函数， 调用函数的方法要在ｒｅａｄｙ自动加载完后就执行ｊｓ脚本的前面
+        function cart_del(cartgoods){
+
+            del = confirm('确定要删除该商品吗') //　如果点击弹框确认　就为ｔｒｕｅ。confirm获取弹框点击状态
+            if (del) {
+                // ajax请求，传入当前商品所在购物车的主键　。回调函数接收结果
+                $.get('/cart/cart_del' + cartgoods, function (data) {
+                    if (data.ok == 1) {
+
+                        $('ul').remove('#' + cartgoods); //转化成选择器删除此ｕｌ列表的商品，加上#让该函数变为ｉｄ选择器，从购物车中删除此ｉｄ主键
+                        total(); //　执行完后调用计算函数，刷新页面.
+                    }
+
+                })
+            }
+        }
+        //　不在ｒｅａｄｉｎｇ　里面的目的是可以让外界调用，不然就调用不了
+         //　函数ｔｏｔａｌ用来计算小计,在小计框中计算然后输入到此框中显示，因为使用函数可获取上一个标签的值
+        function total(){
+            total1 =0 // 每次页面刷新调用时默认为０
+            toutal1_count = 0;　//　总共的产品数量
+            //　遍历每个数量与价格
+            $('.col07').each(function () {
+                // 获取数量（从该标签前一个标签ｃｏｌｏ６中获取后代标签ｉｎｐｕｔ标签中的ｖａｌ值）prev:该同类标签的上一个，ｆｉｎｄ：子标签，后代
+                count = $(this).prev().find('input').val();
+                // 获取单个价格　从ｃｏｌｏ５中的　ｔｅｘｔ的值获取
+                price = $(this).prev().prev().text()
+
+                // 获取小计价格输入到当前框
+                cart_price = parseFloat(count) * parseFloat(price);　//　转化为数值，可带小数类型
+                $(this).text(cart_price.toFixed(2)+'元') // 保留２位小数输入到当前ｔｅｘｔ小计框中
+
+
+                // 每个商品循环时　判断是否勾选商品　勾选的，小计值数量都会加到一起
+                a = $(this).siblings(":first").find('input').prop('checked') //获取第一个同类标签：clo01后代input标签中checkbox框是否勾选了，勾选了返回ｔｒｕｅ
+                if (a) {
+                    total1 += cart_price
+                    toutal1_count++ // 每循环一个总数量加１
+                }
+
+                //　显示总价，与商品总数,
+                $('#zong').text(total1.toFixed(2)+'元')
+                $('#shu').text(toutal1_count)
+
+            })
+
+        }
+    $(function () {
+
+
+        total(); // 调用小计函数
+
+
+         //　全选全消 点击全选时，其他选项卡也跟着变
+      $('#check_all').click(function () {
+          a = $(this).prop('checked') //　单个ｖａｌｕｅ时 ｐｒｏｐ获取ｃｈｅｃｋｅｄ的值返回，ｔｒｕｅ或ｆａｌｓｅ，勾选未勾选
+          $(':checkbox:not(#check_all)').prop('checked',a); //　除了ｃｈｅｃｋ_all属性的ｃｈｅｃｋｂｏｘ，设置ｃｈｅｃｋｂｏｘ盒子框的属性ｃｈｅｃｋｅｄ值为ｃｈｅｃｋ_all的
+          total() //　全选全消都调用计算函数　计算当前未选的数量和总价以及已选的数量和总价
+      })
+
+        // 选择，　如果所有的勾选框都勾选上，全选自动勾选上。
+        $(':checkbox:not(#check_all)').click(function () {
+            if ($(this).prop('checked')){ // 获取有ｃｈｅｃｋｅｄ值是否为勾选状态　ｔｒｕｅ
+                total();　//勾选了调用ｔｏｔａｌ函数，进行计算勾选的商品总价与数量
+                if($(':checked').length+1 == $(':checkbox').length){ // 如果已经勾选的框数量加上ｃｈｅｃｋ_all的　等于全部的ｃｈｅｃｋｂｏｘ框
+                    $('#check_all').prop('checked',true)//　那么id为ｃｈｅｃｋ_all的全选框就勾选上
+                }
+            }
+            else{ //　否则全选就为ｆａｌｓｅ未勾选
+                $('#check_all').prop('checked',false)
+                total();//　如果点击事件取消勾选，从总计中不计算当前商品价格和数量
+
+            }
+        });
+        // 加减操作
+        $('.add').click(function () {
+            //　获取当前点击的商品数量值（因为此ａｄｄ有多个，所用ｔｈｉｓ来获取当前的）
+            count = $(this).next().val() // 获取同等级标签中的下一个标签　即　ｉｎｐｕｔ
+            counts = parseInt(count)+1
+            $(this).next().val(counts).blur() //　写入到ｉｎｐｕｔ标签显示框中，然后调用blur事件判断并存到数据库（相当于模拟用户失去焦点）
+
+
+        })
+        $('.minus').click(function () {
+             count = $(this).prev().val()  //获取当前商品的同类标签的上一个标签值
+             counts = parseFloat(count)-1 // 检测数字转化为数值
+             $(this).prev().val(counts).blur() 　//　完成输出，调用离开焦点事件
+        })
+        // ｂｌｕｒ　事件,手动修改
+        $('.num_show').blur(function () {
+            count = $(this).val()   //获取当前标签的ｖａｌ值
+            if (count <=0){ // 判断，如果输入小于０，更改为１
+                count = 1
+                $(this).val(count) // 写入到当前ｈｔｍｌ显示中
+                total()
+                return;  // 终止下面的ｇｅｔ请求执行
+            }
+            if (count >= 100){  // 不可大于１００
+                count = 99
+                $(this).val(count)
+                total()
+                return;
+            }
+            //获取当前商品在购物车中的ｉｄ主键， 修改数据库中当前商品的数量               parent是获取父类标签 parents获取祖先
+            goods_id = $(this).parents('.cart_list_td').attr('id') //从当前ｐａｒｅｎｔｓ获取它的祖先cart_list_td的ｉｄ属性
+
+            $.get('/cart/mend'+goods_id+'_'+count, function (data) {
+
+                if (data.ok==1){ // 如果＝＝１　数据库已经修改重新计算
+
+                    total() //重新计算
+
+                }
+                else{
+                    $(this).val('1') //修改失败.商品数量改为１
+                }
+            })
+        })
+
+
+    })
+
+
+    </script>
+{% endblock head %}
 {% block  body1 %}
 
 
 
-	<div class="total_count">全部商品<em>2</em>件</div>	
+	<div class="total_count">全部商品<em>{{ cart_goods.count }}</em>件</div>
 	<ul class="cart_list_th clearfix">
 		<li class="col01">商品名称</li>
 		<li class="col02">商品单位</li>
@@ -12,45 +139,31 @@
 		<li class="col05">小计</li>
 		<li class="col06">操作</li>
 	</ul>
-	<ul class="cart_list_td clearfix">
-		<li class="col01"><input type="checkbox" name="" checked></li>
-		<li class="col02"><img src="images/goods/goods012.jpg"></li>
-		<li class="col03">奇异果<br><em>25.80元/500g</em></li>
-		<li class="col04">500g</li>
-		<li class="col05">25.80元</li>
+    {% for cartgoods in cart_goods %}
+	<ul class="cart_list_td clearfix" id="{{ cartgoods.id }}">
+		<li class="col01" ><input type="checkbox" name="" checked ></li>
+		<li class="col02"><img src="/static/{{ cartgoods.goods.gpic }}"></li>
+		<li class="col03">{{ cartgoods.goods.gtitle }}<br><em>{{ cartgoods.goods.gprice }}元/{{ cartgoods.goods.gunit }}</em></li>
+		<li class="col04">{{ cartgoods.goods.gunit }}</li>
+        <li class="col05">{{ cartgoods.goods.gprice }}元</li>
 		<li class="col06">
 			<div class="num_add">
 				<a href="javascript:;" class="add fl">+</a>
-				<input type="text" class="num_show fl" value="1">	
+				<input type="text" class="num_show fl" value="{{ cartgoods.count }}">
 				<a href="javascript:;" class="minus fl">-</a>	
 			</div>
 		</li>
-		<li class="col07">25.80元</li>
-		<li class="col08"><a href="javascript:;">删除</a></li>
+		<li class="col07" >25.80元</li>
+		<li class="col08"><a href="javascript:cart_del({{ cartgoods.id }});">删除</a></li>
 	</ul>
+    {% endfor %}
 
-	<ul class="cart_list_td clearfix">
-		<li class="col01"><input type="checkbox" name="" checked></li>
-		<li class="col02"><img src="images/goods/goods003.jpg"></li>
-		<li class="col03">大兴大棚草莓<br><em>16.80元/500g</em></li>
-		<li class="col04">500g</li>
-		<li class="col05">16.80元</li>
-		<li class="col06">
-			<div class="num_add">
-				<a href="javascript:;" class="add fl">+</a>
-				<input type="text" class="num_show fl" value="1">	
-				<a href="javascript:;" class="minus fl">-</a>	
-			</div>
-		</li>
-		<li class="col07">16.80元</li>
-		<li class="col08"><a href="javascript:;">删除</a></li>
-	</ul>
 	
 
 	<ul class="settlements">
-		<li class="col01"><input type="checkbox" name="" checked=""></li>
+		<li class="col01"><input id ='check_all' type="checkbox" name="" checked=''></li>
 		<li class="col02">全选</li>
-		<li class="col03">合计(不含运费)：<span>¥</span><em>42.60</em><br>共计<b>2</b>件商品</li>
+		<li class="col03">合计(不含运费)：<span>¥</span><em id="zong">0元</em><br>共计已选<b id="shu">0</b>件商品</li>
 		<li class="col04"><a href="../tiantian/place_order.html">去结算</a></li>
 	</ul>
 

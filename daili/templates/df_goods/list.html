@@ -51,9 +51,9 @@
 						<span class="unit">{{ g.gprice }}/{{ g.gunit }}</span>
 
                         {% if request.session.user_name|default:'' != '' %}
-						<a href="javascript:;" id ="{{ g.id }}" class="add_goods" title="加入购物车"></a>
+						<a href="javascript:;" id ="{{ g.id }}" class="add_goods"  title="加入购物车"></a>
                         {% else %}
-                        <a href="/user/login" class="add_goods" title="加入购物车"></a>
+                        <a href="/user/login" class="add_goods"  title="加入购物车"></a>
                         {% endif %}
 
 					</div>
@@ -86,3 +86,37 @@
         </div>
 
 {% endblock body2 %}
+
+    {% block detail_js %}
+     <div class='add_jump'></div>
+	<script type="text/javascript">
+
+		var $add_x = $('.add_goods').offset().top; // 获取当前ａｄｄ_goods对象的　ｘ轴
+		var $add_y = $('.add_goods').offset().left;
+
+		var $to_x = $('#show_count').offset().top;　//　获取购物车的ｘ轴
+		var $to_y = $('#show_count').offset().left;
+
+　　　　//　因只能获取第一个的商品位置，所以更改了小红点触显示的位置,局部刷新非页面刷新，所以要把红点放在ｃｌｉｃｋ中
+
+		$('.add_goods').click(function(){  // 点击事件时小红点停止当前动画返回到ｔｏ_y+7的位置（购物车的位置）
+		    $(".add_jump").css({'left':$add_y+790,'top':$add_x-300,'display':'block'}) // 动画小红点设置位置，
+                                                                            // 然后使用ｓｔｏｐ让它停止当前动画
+            //                                          （当前也无动画，目的是让它回到目标起点）沿路返回起点，完成动画效果。
+		    $(".add_jump").stop().animate({
+
+				'left': $to_y+7,
+				'top': $to_x+7,
+
+                },
+
+				"fast", function() {
+					$(".add_jump").fadeOut('fast',function(){
+						$('#show_count').html({{ requset.session.count }});//　等于ｓｅｓｓｉｏｎ中存放的数量
+					});
+
+			});
+		});
+
+	</script>
+    {% endblock detail_js%}
