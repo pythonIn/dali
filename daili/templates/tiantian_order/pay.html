@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>支付中</title>
+</head>
+<body>
+  订单编号：{{oid}}
+    订单状态:已支付
+    <script>  {# 定时器３秒后　转向　该页面 #}
+     setTimeout('location.href="/user/order/";', 3000);
+     </script>
+</body>
+</html>

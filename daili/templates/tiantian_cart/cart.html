@@ -11,6 +11,7 @@
                     if (data.ok == 1) {
 
                         $('ul').remove('#' + cartgoods); //转化成选择器删除此ｕｌ列表的商品，加上#让该函数变为ｉｄ选择器，从购物车中删除此ｉｄ主键
+
                         total(); //　执行完后调用计算函数，刷新页面.
                     }
 
@@ -20,10 +21,13 @@
         //　不在ｒｅａｄｉｎｇ　里面的目的是可以让外界调用，不然就调用不了
          //　函数ｔｏｔａｌ用来计算小计,在小计框中计算然后输入到此框中显示，因为使用函数可获取上一个标签的值
         function total(){
+
             total1 =0 // 每次页面刷新调用时默认为０
             toutal1_count = 0;　//　总共的产品数量
+             $('#zong').text(total1.toFixed(2)+'元') //　如果没有产品ｅａｃｈ不执行　时默认就等于这个
+             $('#shu').text(toutal1_count)　　//　如果有产品ｅａｃｈ执行，会覆盖总价
             //　遍历每个数量与价格
-            $('.col07').each(function () {
+             $('.col07').each(function () {
                 // 获取数量（从该标签前一个标签ｃｏｌｏ６中获取后代标签ｉｎｐｕｔ标签中的ｖａｌ值）prev:该同类标签的上一个，ｆｉｎｄ：子标签，后代
                 count = $(this).prev().find('input').val();
                 // 获取单个价格　从ｃｏｌｏ５中的　ｔｅｘｔ的值获取
@@ -89,9 +93,28 @@
              counts = parseFloat(count)-1 // 检测数字转化为数值
              $(this).prev().val(counts).blur() 　//　完成输出，调用离开焦点事件
         })
+
+
+
         // ｂｌｕｒ　事件,手动修改
         $('.num_show').blur(function () {
-            count = $(this).val()   //获取当前标签的ｖａｌ值
+
+            count = parseFloat($(this).val())  //获取当前标签的ｖａｌ值转化为数值
+
+            a = parseFloat($(this).attr('id')){# 获取库存　前端ｊｓ计算勾选商品不能超过库存，后台计算麻烦,当前因为调用祖先ｃｏｌ３下库存内容麻烦#}
+            {#，所以就更改把库存数量放到当前ｉｄ中，然后通过获取ｉｄ值获取#}
+
+            ordercicl = 1  {# 该变量用于进行提交事件的判断，默认为１，提交之前会再次进行当前事件的判断 #}
+
+
+            if (a < count){　{# 判断是否大于库存 #}
+                alert('超出库存请修改')
+
+                 $(this).val(a)　　// 当前显示自动修改为库存剩余的数量
+                ordercicl = 0　　　{# 如果等于０　提交按钮不允许提交 #}
+                return ;　{# 　当前判断大于库存就停止执行ｊｓ #}
+            }
+
             if (count <=0){ // 判断，如果输入小于０，更改为１
                 count = 1
                 $(this).val(count) // 写入到当前ｈｔｍｌ显示中
@@ -104,22 +127,53 @@
                 total()
                 return;
             }
+
+
+
+
+
             //获取当前商品在购物车中的ｉｄ主键， 修改数据库中当前商品的数量               parent是获取父类标签 parents获取祖先
             goods_id = $(this).parents('.cart_list_td').attr('id') //从当前ｐａｒｅｎｔｓ获取它的祖先cart_list_td的ｉｄ属性
 
             $.get('/cart/mend'+goods_id+'_'+count, function (data) {
 
-                if (data.ok==1){ // 如果＝＝１　数据库已经修改重新计算
+                if (data.ok == 0){ // 如果＝＝0　数据库已经修改重新计算
 
-                    total() //重新计算
+                     total() //重新计算
 
                 }
                 else{
                     $(this).val('1') //修改失败.商品数量改为１
+
+
                 }
             })
         })
 
+        {# 提交时判断是否超出库存 数量值是否正确或超过库存就取消ｊｓ执行，就提交不了#}
+        $('.order').click(function () {
+            //　创建变量位置在头部，以及使用变量位置不可变，否则会不执行，　
+            zong = parseInt($('#zong').text())　//　获取当前总金额，总数
+            shu = parseInt($('#shu').text())
+            //　如果为０　添加商品到购物车，　不为０．　在执行下面的进入执行函数判断
+            if (zong == 0 || shu == 0){
+
+                 alert ('请添加商品到购物车')
+                 return false;
+             }
+        　
+          $('.num_show').blur()　//　提交之前执行该事件，进行判断值输入是否正确，数量是否大于库存,
+                    // 如当前数据库数量不正确(如详情页添加到购物车中保存到数据库，造成超出库存，)提交后再次检验，ｇｅｔ修改提交正确的给数据库。
+                                        // (用于累计添加数量大于库存时，没有执行ｂｕｒｌ时的ｂｕｇ，提交在次判断)
+            if (ordercicl == 0){　　//　如果等于０　代表大于库存，终止ｊｓ
+
+                return false;
+             }
+
+
+
+
+        })
 
     })
 
@@ -139,17 +193,20 @@
 		<li class="col05">小计</li>
 		<li class="col06">操作</li>
 	</ul>
+    {# 用ｇｅｔ提交表单方式 #}
+    <form action="/tiantian_order/order" method="GET">
     {% for cartgoods in cart_goods %}
 	<ul class="cart_list_td clearfix" id="{{ cartgoods.id }}">
-		<li class="col01" ><input type="checkbox" name="" checked ></li>
-		<li class="col02"><img src="/static/{{ cartgoods.goods.gpic }}"></li>
-		<li class="col03">{{ cartgoods.goods.gtitle }}<br><em>{{ cartgoods.goods.gprice }}元/{{ cartgoods.goods.gunit }}</em></li>
+    {# form表单，get请求传送input标签中的name为键，value为值，如未写name键名的就不传送，checkbox属性，勾选了表示有此标签属性，未勾选则无 #}
+		<li class="col01" ><input type="checkbox" name="orderid" value="{{ cartgoods.id }}" checked ></li>
+		<li class="col02"><img src="/static/{{ cartgoods.goods.gpic }}"></li>                                                 {# 前端ｊｓ计算勾选商品不能超过库存，后台计算麻烦 #}
+        <li class="col03">{{ cartgoods.goods.gtitle }}<br><em>{{ cartgoods.goods.gprice }}元/{{ cartgoods.goods.gunit }}<br>库存:{{ cartgoods.goods.gkucun }}</em></li>
 		<li class="col04">{{ cartgoods.goods.gunit }}</li>
         <li class="col05">{{ cartgoods.goods.gprice }}元</li>
 		<li class="col06">
 			<div class="num_add">
 				<a href="javascript:;" class="add fl">+</a>
-				<input type="text" class="num_show fl" value="{{ cartgoods.count }}">
+				<input type="text" id="{{  cartgoods.goods.gkucun }}" class="num_show fl" value="{{ cartgoods.count }}">
 				<a href="javascript:;" class="minus fl">-</a>	
 			</div>
 		</li>
@@ -164,7 +221,7 @@
 		<li class="col01"><input id ='check_all' type="checkbox" name="" checked=''></li>
 		<li class="col02">全选</li>
 		<li class="col03">合计(不含运费)：<span>¥</span><em id="zong">0元</em><br>共计已选<b id="shu">0</b>件商品</li>
-		<li class="col04"><a href="../tiantian/place_order.html">去结算</a></li>
+		<input class ='order' type="submit" name="" value="去结算"></li>
 	</ul>
-
+    </form>
 	{% endblock body1 %}

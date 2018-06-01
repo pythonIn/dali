@@ -103,4 +103,16 @@ def detail(request, pid):
 
 
 
+# 给ｈａｙｓｔａｃｋ额外添加上下文　在页面中显示
+from haystack.views import SearchView
+
+#　不能改类名以及继承的类，方法名。
+class MySeachView(SearchView):
+    def extra_context(self):  # 重载extra_context来添加额外的context内容
+        context = super(MySeachView, self).extra_context()#　此数为ｈａｙｓｔａｃｋ默认上下文,以及获取ｈｔｍｌ页面的
+        # 当前页面的信息加入到上下文中 title　为键，给键加当前值显示
+        context['title'] = '搜索'# 调用时把当前搜索代入到ｈｔｍｌ的上下文中
+
+        return context
+
 

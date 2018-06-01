@@ -31,14 +31,14 @@
          // 判断收件人
         function check_shou_name(){
             var name =$('#shou').val()
-            var ret = /^[\w]{1,6}$/ //正则匹配，前面规则出现1-6次
+            var ret = /^[\u4e00-\u9fa5]{2,4}$/ //正则匹配汉字编码，最少最大出现２－４个汉字
             if (ret.test(name)){
                 error_shou =false;
                 $('.error_tip').hide()
             }
             else{
                 error_shou = true;
-                $('.error_tip').html('收件人最多输入20个文字').show()
+                $('.error_tip').html('收件人错误').show()
             }
         }
 
@@ -72,8 +72,8 @@
         // 判断手机号码
         function check_phone(){
 
-             var numbers = $('.phone1').val()  // 正则test匹配手机号是否正确
-            var ret = /^[\d]{5,20}$/;  //前面的规则最少出现5次，最多20次
+             var numbers = $('.phone1').val()  // 正则test匹配手机号是否正确，可网上查询专门语句
+            var ret = /^[\d]{11}$/;  //前面的规则最少11次
             if (ret.test(numbers) ){
                 error_phones = false
                 $('.error_phone').hide()
@@ -151,7 +151,7 @@
 				<div class="site_con">
 					<dl>
 						<dt>当前地址：</dt>
-                        <dd>{{ list.u_add }} {{ list.u_addressee }} {{ list.u_phone }}  {{ list.u_this }}</dd>
+                        <dd>收件人：{{ list.u_addressee }} 地址：{{ list.u_add }} 手机号码：{{ list.u_phone }}  邮编：{{ list.u_this }}</dd>
 					</dl>
 				</div>
 				<h3 class="common_title2">编辑地址</h3>

@@ -66,7 +66,7 @@
 
 
 			<div class="pagenation">
-                {% if pageinator.has_previous %}
+                {% if pageinator.has_previous %}{# 商品数据是否有上一页，　有的话，点击时传入，商品ｉｄ，上一页的页数，排序方式 #}
 				<a href="/list{{ goodstype.id }}_{{ pageinator.previous_page_number }}_{{ sort }}">上一页</a>
 
                 {% endif %}

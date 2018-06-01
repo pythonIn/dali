@@ -47,7 +47,8 @@ def add(request,gid,count): # 用户添加商品到购物车
     count_s = Cart_info.objects.filter(user_id = uid ).count() # 获取当前用户购物车中有多少种商品，反过来写可判断这个商品有多少用户
 
     request.session['count'] = count_s # 如有添加新产品到购物车就更新当前购物车数量的ｓｅｓｓｉｏｎ，用于显示购物车商品数量的页面使用ｓｅｓｓｉｏｎ显示
-    # 如果是ajax 请求返回json，否则转向到购物车
+
+    # 如果是ajax 请求返回json，否则转向到购物车页面，　　直接购买页面是使用直接到购物车页面的
     if request.is_ajax():
         return JsonResponse({'count':count_s})# ajax请求的只为添加到购物车中显示购物车的商品数量，而不转向
 
@@ -65,9 +66,9 @@ def mend(request,cid,count):
         cart.count = count  # 更改此商品的数量存到ｃｏｕｎｔ1中
         cart.save()
 
-        countxt = {'ok':1}
+        countxt = {'ok':0}
     except Exception:
-        countxt = {'ok':0}# 如果出错就返回0
+        countxt = {'ok':1}# 如果出错就返回1
     return JsonResponse(countxt)
 
 # 删除产品操作
@@ -75,6 +76,14 @@ def cart_del(request,cid):
     try:
         cart = Cart_info.objects.get(id=int(cid)) # 根据商品在购物车的主键ｉｄ　获取到该主键ｉｄ
         cart.delete()    #　删除操作不需要保存，不然会删不掉。
+    # 显示在购物车数量的ｓｅｓｓｉｏｎ也删除一个
+
+        a = request.session['count']
+        if a>=1:
+            request.session['count'] = a-1
+        else:
+            request.session['count'] =0
+
 
         context = {'ok':1}
     except Exception:

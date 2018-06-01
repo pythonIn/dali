@@ -1,4 +1,5 @@
 {% extends 'bash_base.html' %}
+
 {% block body1 %}
 
 
@@ -13,73 +14,62 @@
 		</div>
 		<div class="right_content clearfix">
 				<h3 class="common_title2">全部订单</h3>
+
+            {% for dingdan in page %} {# 循环遍历分页中的订单 #}
 				<ul class="order_list_th w978 clearfix">
-					<li class="col01">2016-8-21 17:36:24</li>
-					<li class="col02">订单号：56872934</li>
-					<li class="col02 stress">未支付</li>		
+					<li class="col01">{{ dingdan.odate}}</li>
+					<li class="col02">订单号：{{ dingdan.oid }}</li>
+                    {% if dingdan.Ispay == 1 %}
+					<li class="col02 stress">已支付</li>
+                    {% else %}
+                    <li class="col02 stress">未支付</li>
+                    {% endif %}
 				</ul>
+
 
 				<table class="order_list_table w980">
 					<tbody>
 						<tr>
-							<td width="55%">
-								<ul class="order_goods_list clearfix">					
-									<li class="col01"><img src="images/goods02.jpg"></li>
-									<li class="col02">嘎啦苹果嘎啦苹果<em>11.80元/500g</em></li>	
-									<li class="col03">1</li>
-									<li class="col04">11.80元</li>	
+							<td width="55%">  {# 在循环获取每个订单编号中的商品,从　一获取多　的数据 #}
+                                {% for ordergoods in dingdan.order_detailinfo_set.all  %}
+
+								<ul class="order_goods_list clearfix">
+									<li class="col01"><img src="/static/{{ ordergoods.goods.gpic }}"></li>
+									<li class="col02">{{ ordergoods.goods.gtitle }}<em>{{ ordergoods.goods.gprice }}元/{{ ordergoods.goods.gunit }}</em></li>
+									<li class="col03">{{ ordergoods.count }}</li>
+									<li class="col04">{{ ordergoods.price }}元</li>
 								</ul>
-								<ul class="order_goods_list clearfix">					
-									<li class="col01"><img src="images/goods02.jpg"></li>
-									<li class="col02">嘎啦苹果嘎啦苹果<em>11.80元/500g</em></li>	
-									<li class="col03">1</li>
-									<li class="col04">11.80元</li>	
-								</ul>
+                                    {% endfor %}
 							</td>
-							<td width="15%">33.60元</td>
-							<td width="15%">待付款</td>
-							<td width="15%"><a href="#" class="oper_btn">去付款</a></td>
-						</tr>
-					</tbody>
-				</table>
-				
-				<ul class="order_list_th w978 clearfix">
-					<li class="col01">2016-8-21 17:36:24</li>
-					<li class="col02">订单号：56872934</li>
-					<li class="col02 stress">已支付</li>			
-				</ul>
-				<table class="order_list_table w980">
-					<tbody>
-						<tr>
-							<td width="55%">
-								<ul class="order_goods_list clearfix">					
-									<li class="col01"><img src="images/goods02.jpg"></li>
-									<li class="col02">嘎啦苹果嘎啦苹果<em>11.80元/500g</em></li>	
-									<li class="col03">1</li>
-									<li class="col04">11.80元</li>	
-								</ul>
-								<ul class="order_goods_list clearfix">					
-									<li class="col01"><img src="images/goods02.jpg"></li>
-									<li class="col02">嘎啦苹果嘎啦苹果<em>11.80元/500g</em></li>	
-									<li class="col03">1</li>
-									<li class="col04">11.80元</li>	
-								</ul>
-							</td>
-							<td width="15%">33.60元</td>
+							<td width="15%">包含运费:{{ dingdan.momeys }}元</td>
+                            {% if dingdan.Ispay == 1 %}
 							<td width="15%">已付款</td>
-							<td width="15%"><a href="#" class="oper_btn">查看物流</a></td>
+                            <td width="15%"><a href="#" class="oper_btn">查看物流</a></td>
+                            {% else %}
+                            <td width="15%">未付款</td>
+							<td width="15%"><a href="/tiantian_order/pay{{ dingdan.oid }}" class="oper_btn">去付款</a></td>
+                            {% endif %}
 						</tr>
 					</tbody>
 				</table>
+                {% endfor %}
 
 				<div class="pagenation">
-					<a href="#">上一页</a>
-					<a href="#" class="active">1</a>
-					<a href="#">2</a>
-					<a href="#">3</a>
-					<a href="#">4</a>
-					<a href="#">5</a>
-					<a href="#">下一页></a>
+                    {% if page.has_previous %} {# 判断商品是否有上一页,有的话点击就传到试图判断显示该页 #}
+					<a href="/user/order{{ page.previous_page_number }}">上一页</a>{# 有的话显示上一页的页码 #}
+					{% endif %}
+
+                {% for list in plist %}  {# 遍历总页数 #}
+                    {% if list == pageid %} {# 如果当前页等于当前视图显示数据的页数就标记高亮ｃｓｓ　ａ标签不可点击的 #}
+                    <a href="#" class="active">{{ list }}</a>
+                    {% else %}  {# 否则就不显示高亮　ａ标签可点击切换到该页面 #}
+					<a href="/user/order{{ list }}">{{ list }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page.has_next %}  {# 如果有下一页数据 #}
+					<a href="/user/order{{ page.next_page_number }}">下一页></a>
+                {% endif %}
 				</div>
 		</div>
 	</div>

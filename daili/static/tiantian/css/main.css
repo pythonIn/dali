@@ -282,7 +282,7 @@ html,body{height:100%}
 .login_top{width:960px;height:130px;margin:0 auto;}
 .login_logo{display:block;width:193px;height:76px;margin-top:30px;}
 .login_form_bg{height:480px;background-color:#518e17}
-.no-mp{margin-top:0px;}
+.no-mp{margin-top:30px;}
 .login_form_wrap{width:960px;height:480px;margin:0 auto;}
 .login_banner{width:381px;height:322px;background:url(../images/login_banner.png) no-repeat;margin-top:90px;}
 .slogan{width:40px;height:300px;font-size:30px;color:#f0f9e8;text-align:center;line-height:36px;margin:80px 0 0 120px}
@@ -391,9 +391,11 @@ html,body{height:100%}
 .settlements .col03 span{color:#ff0000;}
 .settlements .col03 b{color:#ff0000;font-size:14px;padding:0 5px;}
 
-.settlements .col04{width:14%;text-align:center;float:right;}
-.settlements .col04 a{display:block;height:78px;background-color:#ff3d3d;text-align:center;line-height:78px;color:#fff;font-size:24px}
-
+.settlements .order{border:0;width:14%;float:right;display:block;height:78px;background-color:#ff3d3d;color:#fff;font-size:24px}
+.order:hover{
+    cursor:pointer;
+    background-color: #ff4200;
+}
 
 .common_title{width:1200px;margin:20px auto 0;font-size:14px;}
 
@@ -419,7 +421,7 @@ html,body{height:100%}
 
 .goods_list_th{height:40px;border-bottom:1px solid #ccc}
 .goods_list_th li{float:left;line-height:40px;text-align:center;}
-.goods_list_th .col01{width:25%}
+.goods_list_th .col011{width:25%}
 .goods_list_th .col02{width:20%}
 .goods_list_th .col03{width:25%}
 .goods_list_th .col04{width:15%}

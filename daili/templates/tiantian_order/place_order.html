@@ -1,0 +1,176 @@
+{% extends 'bash_base.html' %}
+{% block head %}
+    <script>
+    $(function () {
+        // 遍历索引。　ｉ为索引值，１，２，３，４，
+            $('.col01').each(function (i) {
+                i+=1 // 因会从０开始所以＋１
+                $(this).html(i)
+            })
+
+        //　获取小计,总价
+        a = 0　　// 总价变量
+        b = 0   //　总数量变量
+        car = 0　　//　运费变量
+        $('.col07').each(function () {
+            prices = $(this).prev().text()  //　获取同级的上个标签的值
+            counts = $(this).prev().prev().text()　//　获取同级的上上个标签值
+
+            xiaoji = parseFloat(prices) * parseFloat(counts)// 进行字符转化为数值，遇到数值的字符就转。
+            $(this).html(xiaoji.toFixed(2)+'元');　//　输出带２个小数点
+
+       //　循环计算总计，要定义变量
+             a +=xiaoji;
+             $('#zongs').text(a.toFixed(2));
+             b ++;
+             $('#count').text(b);
+
+
+
+        })
+        // 总价加运费等于实际价钱
+        car = $('#car').text()
+        car = parseFloat(car)
+        sums = ((a+car).toFixed(2)); // 总计加运费留２位小数，赋给ｓｕｍｓ
+
+        $('#momey').text(sums+'元')
+
+    })
+    //　订单按钮点击触发函数
+    function up() {
+        orderid=[];  // 创建数组　循环遍历获取　商品ｉｄ　存入到数组中,目前就这一个有多个不同值的
+        $('.goods_list_td').each(function () {
+            orderid.push( $(this).attr('id')) //获取当前属性ｉｄ的值存入到ｏｒｄｅｒｉｄ数组
+
+        });
+
+       //　ｈ５本地存贮，将２存到ｏｒｄｅｒ_finish键中
+        localStorage.setItem('order_finish',2);
+
+        // ajax 根据ｈｔｔｐ传输写法，发送数据到试图
+        $.post({
+            url:'/tiantian_order/hadler',
+            dataType:'json',   //数据类型
+            type:'POST',　　　//　传输类型
+            data:{　　//ajax　post传输数据　ｃｓｒｆ验证
+                'csrfmiddlewaretoken':'{{ csrf_token }}',//因是ｐｏｓｔ请求，需要csrf验证
+                id:orderid, // id键　存放购物车ｉｄ
+                sum:sums, 　　　//　实际支付的费用
+                address:$('#address').text() , //同时获取收件人　收件地址，　电话等
+
+               /* success:function (data) {
+                    　success回调函数
+                }*/
+            }
+        })  // ajax的回调函数.ｄｏｎｅ，与　success一样,
+
+            .done(function (data) {//　根据返回的回调函数判断页面显示付款成功还是显示失败
+
+                if (data.erro == 0){
+
+                $('.popup_con ').fadeIn('fast', function() {　//　淡入动画
+
+                    setTimeout(function(){　//　定时器
+                        $('.popup_con ').fadeOut('fast',function(){ // fadeout淡出动画，ｆａｓｔ淡出的速度，隐藏完后执行函数
+                            window.location.href = '/user/order';　//　重定向首页
+                        });
+                    },3000)　//　３０００毫秒，后调用　淡出动画函数。定时器
+
+                });
+
+                }
+                else if(data.erro==1){
+                    $('.popup_con p').html('库存不足，请修改商品数量')
+                     $('.popup_con').fadeIn('fast', function() {　//　淡入动画
+
+                    setTimeout(function(){　//　定时器
+                        $('.popup_con').fadeOut('fast',function(){ // fadeout淡出动画，ｆａｓｔ淡出的速度，隐藏完后执行函数
+                            window.location.href = '/cart/cart';　//　重定向首页
+                        });
+                    },3000)　//　３０００毫秒，后调用　淡出动画函数。定时器
+
+                });
+                }
+
+            })
+
+    }
+
+    </script>
+{% endblock head %}
+{% block body1 %}
+	
+	<h3 class="common_title">确认收货地址</h3>
+
+	<div class="common_list_con clearfix">
+		<dl>
+			<dt>寄送到：</dt>
+			<dd><input type="radio" id ="address" name="" checked="">{{ user.u_add }} （{{ user.u_addressee }} 收）{{ user_phone }}</dd>
+		</dl>
+		<a href="/user/site" class="edit_site">编辑收货地址</a>
+
+	</div>
+	
+	<h3 class="common_title">支付方式</h3>	
+	<div class="common_list_con clearfix">
+		<div class="pay_style_con clearfix">
+			<input type="radio" name="pay_style" checked>
+			<label class="cash">货到付款</label>
+			<input type="radio" name="pay_style">
+			<label class="weixin">微信支付</label>
+			<input type="radio" name="pay_style">
+			<label class="zhifubao"></label>
+			<input type="radio" name="pay_style">
+			<label class="bank">银行卡支付</label>
+		</div>
+	</div>
+
+	<h3 class="common_title">商品列表</h3>
+	
+	<div class="common_list_con clearfix">
+		<ul class="goods_list_th clearfix">
+			<li class="col011">商品名称</li>{# 改为ｃｏｌ０１１避免冲突 #}
+			<li class="col02">商品单位</li>
+			<li class="col03">商品价格</li>
+			<li class="col04">数量</li>
+			<li class="col05">小计</li>		
+		</ul>
+        {% for cartgoods in list %}
+                                                {# 获取购物车的ｉｄ传送到订单试图中 #}
+		<ul class="goods_list_td clearfix" id ='{{ cartgoods.id }}'>
+			<li class="col01">1</li>
+			<li class="col02"><img src="/static/{{ cartgoods.goods.gpic }}"></li>
+			<li class="col03">{{ cartgoods.goods.gtitle }}</li>
+			<li class="col04">{{ cartgoods.goods.gunit }}</li>
+			<li class="col05">{{ cartgoods.goods.gprice }}元</li>
+			<li class="col06">{{ cartgoods.count }}</li>
+			<li class="col07">25.80元</li>	
+		</ul>
+    {% endfor %}
+	</div>
+
+	<h3 class="common_title">总金额结算</h3>
+
+	<div class="common_list_con clearfix">
+		<div class="settle_con">
+			<div class="total_goods_count">共<em id="count"></em>件商品，总金额<b id="zongs"></b></div>
+			<div class="transit">运费：<b id="car">10元</b></div>
+			<div class="total_pay">实付款：<b id="momey"></b></div>
+		</div>
+	</div>
+
+	<div class="order_submit clearfix">
+		<a href="javascript:up();" id="order_btn">提交订单</a>
+	</div>
+
+    <div class="popup_con">{#订单提交成功　动画#}
+		<div class="popup">
+			<p>订单提交成功！</p>
+		</div>
+
+		<div class="mask"></div>
+	</div>
+{% endblock body1 %}
+
+
+

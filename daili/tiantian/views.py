@@ -15,6 +15,11 @@ from tiantian_page.models import *
 
 from tiantian_cart.models import * # 导入购物车数据库　进行查询购物车信息
 
+from tiantian_order.models import *
+
+from django.core.paginator import *
+
+
 # 显示注册页面
 def register(request):
     return render(request, "tiantian/register.html")
@@ -88,13 +93,13 @@ def login_hland(request):
             request.session['user_name'] = name # session也是一个类字典的类型，通过user_name键获取值
             red.delete_cookie('goods_ids') #　重新登入后，默认删除所有用户浏览记录
             request.session['count']=cart_count # 登入后显示购物车数量。
-            return red # 返回设置的cookie,return给当前表单所属浏览器。
+            return red # 返回设置的cookie,进入设置的ｕｒｌ中。
 
         # 如果密码不正确，上下文提交至页面，js判断写入出错为密码 重新渲染页面，显示之前输入的错误的账户与密码
         else:
             context ={'title':'用户登陆','error_name':0,'error_pwd':1,'uname':name,'upwd':pwd1}
             return render(request, 'tiantian/login.html', context)
-
+            # 如果用户名不正确，上下文提交至页面，　显示之前输入的用户名与密码
     else:
         context = {'title':'用户登陆','error_name':1,'error_pwd':0,'uname':name,'upwd':pwd1}
         return render(request, 'tiantian/login.html', context)
@@ -129,25 +134,39 @@ def logout(request):
     return redirect('/') # 重定向到 主页
 
 
-# 订单
-@user_decorator.login
-def order(request):
-    context = {'title':'用户中心','title2':'全部订单' }
-    return render(request, 'tiantian/user_center_order.html',context)
+
 # 收货地址
 @user_decorator.login
-def site(requst):
+def site(request):
     # 通过缓存 获取该用户的数据库对象
-    user = UserInfo.objects.get(id = requst.session['user_id'])
-    if requst.method=='POST': # 如果是表单提交存入数据库
-        user.u_addressee = requst.POST['recipinet']
-        user.u_add = requst.POST['site_addr']
-        user.u_phone = requst.POST['phone']
-        user.u_this = requst.POST['zip_code']
+
+    user = UserInfo.objects.get(id = request.session['user_id'])
+    if request.method=='POST': # 如果是表单提交存入数据库
+        user.u_addressee = request.POST['recipinet']
+        user.u_add = request.POST['site_addr']
+        user.u_phone = request.POST['phone']
+        user.u_this = request.POST['zip_code']
         user.save()
     context = {'list':user, 'title':'用户中心','title2':'收货地址' }
 
-    return render(requst, 'tiantian/user_center_site.html',context)
 
+    return render(request, 'tiantian/user_center_site.html',context)
+
+# 订单页面
+@user_decorator.login   # 默认参数１，为了与分页共用一个试图
+def user_order(request, pageid=1 ):
+    #此页面展示用户提交的订单，根据用户订单是否支付，下单顺序进行排序
+    uid = request.session.get('user_id')
+    # 查询主表中的当前用户的所有订单信息， 按最新更新的时间，支付情况(正序0倒1)　订单编号排序，
+    orderinfo = order_info.objects.filter(user = uid ).order_by('-Ispay','-oid')
+
+    paginator = Paginator(orderinfo, 2) # 分页　两个订单信息为一页
+    page = paginator.page(int(pageid)) # 获取指定页的数据，　默认参数１
+    # 获取一共多少页
+    plist = paginator.page_range
+
+                                                            #　当前页
+    context = {'title':'用户中心','title2':'全部订单' , 'pageid':int(pageid),'page':page, 'plist':plist}
+    return render(request, 'tiantian/user_center_order.html', context)
 
 

@@ -42,10 +42,34 @@
                 })
 
             })
+            //　购买页面
+            $('#buy').click(function () {
+
+                num = $('.num_show').val()  //　商品数量
+
+                kucun = {{ goods.gkucun }} //库存
+                if (num <=kucun) {
+                    window.location.href = '/cart/add{{ goods.id }}_' + num
+                    {# 转向给添加商品的试图，该ａｄｄ试图中判断　如不是ａｊａｘ提交的转向购物车 #}
+                }
+                else{
+                    alert('超出库存')
+                    return false;
+                }
+                })
 
         })
 
     </script>
+    <style>
+        .kucun{
+            color: #878787;
+            padding-left:30px;
+            line-height: 62px;
+            font-size: 13px;
+
+    }
+    </style>>
 {% endblock head %}
 
 {% block body2 %}
@@ -68,10 +92,11 @@
 					<a href="javascript:add();" class="add fr">+</a>
 					<a href="javascript:minus();" class="minus fr">-</a>
 				</div>
+                 <span class="kucun">库存:{{ goods.gkucun }}</span>
 			</div>
 			<div class="total">总价：<em id="zong">{{ goods.gprice }}元</em></div>
 			<div class="operate_btn">
-				<a href="javascript:;" class="buy_btn">立即购买</a>
+				<a href="javascript:;" class="buy_btn" id="buy">立即购买</a>
                 {% if request.session.user_name|default:'' != "" %}
 				<a href='javascript:;' class="add_cart" id="add_goods">加入购物车</a>
                 {% else %}

@@ -1,0 +1,97 @@
+{%extends 'df_goods/base.html'%}
+{% block head%}
+
+      <style>
+    .pagenation{
+        width: 1300px;
+    }
+    </style>
+{% endblock head %}
+{%block body2%}
+
+			<ul class="goods_type_list clearfix">
+				{%for g in page%} {# page为ｈａｙｓｔａｃｈ搜索框架默认返回的上下文，?q为传输 #}
+				<li>
+					<a href="/{{g.object.id}}/"><img src="/static/{{g.object.gpic}}"></a>
+					<h4><a href="/{{g.object.id}}/">{{g.object.gtitle}}</a></h4>
+					<div class="operate">
+						<span class="prize">￥{{g.object.gprice}}</span>
+						<span class="unit">{{g.object.gunit}}</span>
+                        {% if request.session.user_name|default:'' != '' %}
+						<a href="javascript:;" class="add_goods" id='{{g.object.id}}'  title="加入购物车"></a>
+                        {% else %}
+                        <a href="/user/login" class="add_goods"  title="加入购物车"></a>
+                        {% endif %}
+					</div>
+				</li>
+				{%endfor%}
+			</ul>
+
+
+
+			<div class="pagenation">
+			{%if page.has_previous%}
+				<a href="/search/?q={{query}}&amp;page={{page.previous_page_number}}"><上一页</a>
+				{%endif%}
+
+				{%for pindex in paginator.page_range%}
+				{%if pindex == page.number%}
+				<a href="#" class="active">{{pindex}}</a>
+				{%else%}
+
+				<a href="/search/?q={{query}}&amp;page={{pindex}}">{{pindex}}</a>
+				{%endif%}
+				{%endfor%}
+
+				{%if page.has_next%}
+				<a href='/search/?q={{query}}&amp;page={{page.next_page_number}}'>下一页></a>
+				{%endif%}
+			</div>
+		</div>
+	</div>
+
+<script type="text/javascript">
+		$('.add_goods').click(function(){
+			//异步　点击加入购物车时　　如果已经登入
+
+			var a=$(this).prop('id');//获取ｉｄ的　值
+			var i=a.toString(); //ｊｓ中转化为字符串
+			$.get('/cart/add'+i+'_1',function(data){ //　传到购物车试图中，回调函数拿到总数量，刷新购物车数量，
+				$('#show_count').text(data.count);
+       });
+		});
+		</script>
+{%endblock body2%}
+ {% block detail_js %}
+     <div class='add_jump'></div>
+	<script type="text/javascript">
+
+		var $add_x = $('.add_goods').offset().top; // 获取当前ａｄｄ_goods对象的　ｘ轴
+		var $add_y = $('.add_goods').offset().left;
+
+		var $to_x = $('#show_count').offset().top;　//　获取购物车的ｘ轴
+		var $to_y = $('#show_count').offset().left;
+
+　　　　//　因只能获取第一个的商品位置，所以更改了小红点触显示的位置,局部刷新非页面刷新，所以要把红点放在ｃｌｉｃｋ中
+
+		$('.add_goods').click(function(){  // 点击事件时小红点停止当前动画返回到ｔｏ_y+7的位置（购物车的位置）
+		    $(".add_jump").css({'left':$add_y+1055,'top':$add_x-238,'display':'block'}) // 动画小红点设置位置，
+                                                                            // 然后使用ｓｔｏｐ让它停止当前动画
+            //                                          （当前也无动画，目的是让它回到目标起点）沿路返回起点，完成动画效果。
+		    $(".add_jump").stop().animate({
+
+				'left': $to_y+7,
+				'top': $to_x+7,
+
+                },
+
+				"fast", function() {
+					$(".add_jump").fadeOut('fast',function(){
+						$('#show_count').html({{ requset.session.count }});//　等于ｓｅｓｓｉｏｎ中存放的数量
+					});
+
+			});
+		});
+
+	</script>
+{% endblock detail_js%}
